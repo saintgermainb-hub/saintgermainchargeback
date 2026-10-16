@@ -2,6 +2,24 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<!-- Saint Center · login único (acrescentado; o login próprio continua como reserva) -->
+<script>
+(function(){
+  var MOD='chargeback', KT='cb-t', KU='cb-u';
+  window.SC_CENTER='https://saintgermainb-hub.github.io/saintcenter/';
+  try{
+    var t=localStorage.getItem('sc-token'), u=JSON.parse(localStorage.getItem('sc-user')||'null');
+    var nivel=u&&u.perms&&u.perms[MOD];
+    if(t&&nivel){
+      sessionStorage.setItem(KT,t);
+      sessionStorage.setItem(KU,JSON.stringify({id:'sc:'+u.login,login:u.login,nome:u.nome,email:u.email||'',admin:nivel==='admin',ativo:true}));
+      document.documentElement.classList.add('sc');
+      if(window.self!==window.top) document.documentElement.classList.add('sc-dentro');
+    }
+  }catch(e){}
+})();
+</script>
+<style>html.sc #btnSenha,html.sc #btnSair,html.sc #navEquipe,html.sc #tabEquipe{display:none!important}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chargebacks · Saint Germain</title>
 <meta name="robots" content="noindex">
@@ -1171,5 +1189,20 @@ try{ const p=localStorage.getItem("cb_per"); if(p && p!=="custom" && [...$("per"
 })();
 </script>
 
+<!-- Saint Center · se a sessão expirar, volta para o login único -->
+<script>
+(function(){
+  if(!document.documentElement.classList.contains('sc')||typeof sairLocal!=='function')return;
+  var original=sairLocal;
+  window.sairLocal=function(){
+    var r=original.apply(this,arguments);
+    try{
+      if(window.self!==window.top) window.parent.postMessage({saintCenter:'sessao-expirou'},location.origin);
+      else location.href=window.SC_CENTER;
+    }catch(e){}
+    return r;
+  };
+})();
+</script>
 </body>
 </html>
